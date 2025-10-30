@@ -74,10 +74,10 @@ export class Player {
     let moveX = 0;
     let moveY = 0;
 
-    if (keys.w || keys.up) moveY -= 1;
-    if (keys.s || keys.down) moveY += 1;
-    if (keys.a || keys.left) moveX -= 1;
-    if (keys.d || keys.right) moveX += 1;
+    if (keys.w || keys.arrowup) moveY -= 1;
+    if (keys.s || keys.arrowdown) moveY += 1;
+    if (keys.a || keys.arrowleft) moveX -= 1;
+    if (keys.d || keys.arrowright) moveX += 1;
     if (moveX !== 0 && moveY !== 0) {
       const length = Math.sqrt(moveX * moveX + moveY * moveY);
       moveX /= length;

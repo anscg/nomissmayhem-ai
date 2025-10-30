@@ -68,6 +68,10 @@ export class Game {
       a: false,
       s: false, 
       d: false,
+      arrowup: false,
+      arrowdown: false,
+      arrowleft: false,
+      arrowright: false,
       shift: false,
     };
 
@@ -236,8 +240,11 @@ export class Game {
       if (!this.isGameStarted) return;
       if (e.key.toLowerCase() in this.keys) {
         this.keys[e.key.toLowerCase()] = true;
-        //console.log(e);
       }
+      if (["w", "a", "s", "d", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key.toLowerCase())) {
+        e.preventDefault(); 
+      }
+      console.log(e.key.toLowerCase() in this.keys)
     });
 
     window.addEventListener('keyup', (e) => {

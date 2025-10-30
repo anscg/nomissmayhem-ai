@@ -6,8 +6,10 @@
 body {
     margin: 0;
     overflow: hidden;
+    width:1000px;
+    height:10vw;
     opacity: 0;
-    background: #0f0f1b;
+    background: #000000;
     background-image: 
         linear-gradient(rgba(15, 15, 27, 0.9), rgba(15, 15, 27, 0.9)),
         repeating-linear-gradient(
