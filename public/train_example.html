@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RL Training - No Miss Mayhem</title>
+    <style>
+        body {
+            background: #111;
+            color: #0f0;
+            font-family: monospace;
+            padding: 20px;
+        }
+        #stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-box {
+            background: #222;
+            border: 2px solid #0f0;
+            padding: 15px;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        #controls {
+            margin-bottom: 20px;
+        }
+        button {
+            background: #0f0;
+            color: #111;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-family: monospace;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #0d0;
+        }
+        #log {
+            background: #000;
+            border: 2px solid #0f0;
+            padding: 10px;
+            height: 400px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🤖 RL Training Mode</h1>
+    
+    <div id="stats">
+        <div class="stat-box">
+            <div>Episodes</div>
+            <div class="stat-value" id="episodes">0</div>
+        </div>
+        <div class="stat-box">
+            <div>Total Steps</div>
+            <div class="stat-value" id="steps">0</div>
+        </div>
+        <div class="stat-box">
+            <div>Avg Reward</div>
+            <div class="stat-value" id="avgReward">0.00</div>
+        </div>
+        <div class="stat-box">
+            <div>Best Reward</div>
+            <div class="stat-value" id="bestReward">0.00</div>
+        </div>
+        <div class="stat-box">
+            <div>Steps/Second</div>
+            <div class="stat-value" id="sps">0</div>
+        </div>
+        <div class="stat-box">
+            <div>Current Reward</div>
+            <div class="stat-value" id="currentReward">0.00</div>
+        </div>
+    </div>
+
+    <div id="controls">
+        <button id="startBtn">Start Random Agent</button>
+        <button id="stopBtn">Stop</button>
+        <label>
+            Speed: <input type="range" id="speedSlider" min="1" max="100" value="10">
+            <span id="speedValue">10</span>x
+        </label>
+    </div>
+
+    <div id="log"></div>
+
+    <script type="module">
+        import { AITrainer } from './js/AITrainer.js';
+
+        const trainer = new AITrainer();
+        let running = false;
+        let episodes = 0;
+        let totalSteps = 0;
+        let totalReward = 0;
+        let bestReward = -Infinity;
+        let lastTime = Date.now();
+        let lastSteps = 0;
+
+        // Random agent for testing
+        function randomAction() {
+            return {
+                move: [Math.random() * 2 - 1, Math.random() * 2 - 1],
+                aim: [Math.random(), Math.random()],
+                shoot: Math.random() > 0.5,
+                dash: Math.random() > 0.95
+            };
+        }
+
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const line = document.createElement('div');
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(line);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateStats() {
+            document.getElementById('episodes').textContent = episodes;
+            document.getElementById('steps').textContent = totalSteps;
+            document.getElementById('avgReward').textContent = 
+                episodes > 0 ? (totalReward / episodes).toFixed(2) : '0.00';
+            document.getElementById('bestReward').textContent = bestReward.toFixed(2);
+            
+            const now = Date.now();
+            const dt = (now - lastTime) / 1000;
+            if (dt > 0.5) {
+                const sps = (totalSteps - lastSteps) / dt;
+                document.getElementById('sps').textContent = Math.round(sps);
+                lastTime = now;
+                lastSteps = totalSteps;
+            }
+        }
+
+        async function runEpisode() {
+            const state = trainer.reset(0); // Level 0 (tutorial)
+            log(`Episode ${episodes + 1} started`);
+            
+            let done = false;
+            let steps = 0;
+
+            while (!done && running) {
+                const action = randomAction();
+                const result = trainer.step(action);
+                
+                done = result.done;
+                steps++;
+                totalSteps++;
+
+                document.getElementById('currentReward').textContent = 
+                    result.info.episodeReward.toFixed(2);
+
+                if (steps % 100 === 0) {
+                    updateStats();
+                }
+
+                // Allow UI to update occasionally
+                if (steps % 1000 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
+            }
+
+            episodes++;
+            const episodeReward = trainer.episodeReward;
+            totalReward += episodeReward;
+            bestReward = Math.max(bestReward, episodeReward);
+
+            log(`Episode ${episodes} finished: ${steps} steps, reward: ${episodeReward.toFixed(2)}`);
+            updateStats();
+
+            if (running) {
+                setTimeout(() => runEpisode(), 10);
+            }
+        }
+
+        document.getElementById('startBtn').addEventListener('click', () => {
+            if (!running) {
+                running = true;
+                log('Starting training with random agent...');
+                runEpisode();
+            }
+        });
+
+        document.getElementById('stopBtn').addEventListener('click', () => {
+            running = false;
+            log('Training stopped');
+        });
+
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            const speed = parseInt(e.target.value);
+            trainer.setSpeed(speed);
+            document.getElementById('speedValue').textContent = speed;
+        });
+
+        log('RL Training interface ready');
+        log('Click "Start Random Agent" to test the environment');
+        log('Random agent will play the game to demonstrate the API');
+    </script>
+</body>
+</html>

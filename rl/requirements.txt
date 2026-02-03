@@ -1,0 +1,19 @@
+# Core RL dependencies
+gymnasium>=0.29.0
+numpy>=1.24.0
+torch>=2.0.0
+stable-baselines3>=2.2.0
+
+# For parallel environments
+cloudpickle>=2.0.0
+
+# For ONNX export
+onnx>=1.14.0
+onnxruntime>=1.15.0
+
+# Optional: For better training visualization
+tensorboard>=2.14.0
+tqdm>=4.65.0
+
+# Required for visual training/watching
+pygame>=2.5.0
